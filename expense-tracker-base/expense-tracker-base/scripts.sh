@@ -1,0 +1,1 @@
+docker run -it --rm -v "${pwd}:/app" python sh -c "cd /app && pip install -r requirements.txt"
