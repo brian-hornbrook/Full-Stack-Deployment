@@ -11,9 +11,18 @@ services:
       # Enable Traefik Web UI (Use authentication in production)
       - "--api.insecure=true"
 
+      - "--ping=true"
+      - "--ping.entryPoint=web"
+
       - "--providers.docker=true"
       - "--providers.docker.exposedByDefault=false"
       - "--entrypoints.web.address=:80"
+    healthcheck:
+      test: [ "CMD-SHELL", "wget -q0- http://127.0.0.1:80/ping | grep -q 'OK' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   frontend:
     build:
@@ -26,6 +35,12 @@ services:
       - "traefik.http.routers.frontend.entrypoints=web"
     restart: unless-stopped
     scale: 3
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http:/localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   backend:
     build: ./backend
@@ -37,6 +52,12 @@ services:
       - "traefik.http.routers.backend.entrypoints=web"
     restart: unless-stopped
     scale: 2
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http:/localhost:5001/" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
     # depends_on:
     #   - db
 
@@ -49,6 +70,12 @@ services:
       - POSTGRES_PASSWORD=top-secret
       - POSTGRES_DB=expense_tracker
       - POSTGRES_USER=expense_tracker
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $POSTGRES_DB -U $POSTGRES_USER -h 127.0.0.1 || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
 volumes:
   db-vol:
