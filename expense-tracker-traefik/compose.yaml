@@ -25,6 +25,7 @@ services:
       - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
       - "traefik.http.routers.frontend.entrypoints=web"
     restart: unless-stopped
+    scale: 3
 
   backend:
     build: ./backend
@@ -35,6 +36,7 @@ services:
       - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=web"
     restart: unless-stopped
+    scale: 2
     # depends_on:
     #   - db
 
